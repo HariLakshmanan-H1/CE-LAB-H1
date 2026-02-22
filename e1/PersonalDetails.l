@@ -4,7 +4,7 @@
 
 /* Definitions for patterns */
 TITLE       (Mr\.|Mrs\.|Miss\.|Dr\.)
-NAME        {TITLE}[[:space:]][a-zA-Z]+([\t][a-zA-Z]+)*
+NAME        {TITLE}[[:space:]][a-zA-Z]+[[:space:]]([a-zA-Z]+)*
 EMAIL       [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
 AADHAR      [2-9][0-9]{3}[[:space:]][0-9]{4}[[:space:]][0-9]{4}|[2-9][0-9]{11}
 MOBILE      [6-9][0-9]{9}
