@@ -1,5 +1,5 @@
-Expr -> Term Expr'
-Expr' -> + Term Expr' | - Term Expr' | E
-Term -> Factor Term'
-Term' -> * Factor Term' | / Factor Term' | E
-Factor -> ( Expr ) | num | name
+E -> T E'
+E' -> + T E' | - T E' | e
+T -> F T'
+T' -> * F T' | / F T' | e
+F -> ( E ) | num | name

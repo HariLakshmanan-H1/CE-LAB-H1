@@ -62,41 +62,44 @@ def compute_follow(productions, first, nonterminals, start_symbol):
 
     while True:
         changed = False
-        for lhs in nonterminals:
-            for prod_lhs in nonterminals:
-                for production in productions[prod_lhs]:
-                    symbols = production.split()
-                    for i, symbol in enumerate(symbols):
-                        if symbol not in nonterminals:
-                            continue
-                        current_follow = set(follow[symbol])
 
-                        # Case 1: symbol followed by another symbol
-                        if i + 1 < len(symbols):
-                            next_symbol = symbols[i + 1]
-                            next_first = set(first[next_symbol])
-                            if 'e' in next_first:  # Epsilon can vanish
-                                next_first.remove('e')
-                                # Check if rest can vanish
-                                rest_can_vanish = True
-                                for s in symbols[i + 2:]:
-                                    if 'e' not in first[s]:
-                                        rest_can_vanish = False
-                                        break
-                                if rest_can_vanish:
-                                    next_first.update(follow[prod_lhs])
-                            current_follow.update(next_first)
+        # Iterate over all nonterminals and their productions
+        for nt in nonterminals:
+            for production in productions[nt]:
+                symbols = production.split()
+                for i, symbol in enumerate(symbols):
+                    if symbol not in nonterminals:
+                        continue
+                    current_follow = set(follow[symbol])
 
-                        # Case 2: symbol at the end → add FOLLOW of LHS
-                        else:
-                            current_follow.update(follow[prod_lhs])
+                    # Case 1: symbol followed by another symbol
+                    if i + 1 < len(symbols):
+                        next_symbol = symbols[i + 1]
+                        next_first = set(first[next_symbol])
+                        if 'e' in next_first:  # epsilon can vanish
+                            next_first.remove('e')
+                            # Check if rest can vanish
+                            rest_can_vanish = all('e' in first[s] for s in symbols[i+2:])
+                            if rest_can_vanish:
+                                next_first.update(follow[nt])
+                        current_follow.update(next_first)
 
-                        if current_follow != set(follow[symbol]):
-                            follow[symbol] = list(current_follow)
-                            changed = True
+                    # Case 2: symbol at the end → add FOLLOW of current nonterminal
+                    else:
+                        current_follow.update(follow[nt])
+
+                    if current_follow != set(follow[symbol]):
+                        follow[symbol] = list(current_follow)
+                        changed = True
+
         if not changed:
             break
 
+    # Cleanup: remove any nonterminals from FOLLOW sets
+    for nt in nonterminals:
+        follow[nt] = [sym for sym in follow[nt] if sym not in nonterminals]
+
+    return follow
     # Cleanup: remove any nonterminals from FOLLOW sets
     for nt in nonterminals:
         follow[nt] = [sym for sym in follow[nt] if sym not in nonterminals]
