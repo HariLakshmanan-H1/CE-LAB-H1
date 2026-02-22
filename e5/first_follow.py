@@ -46,9 +46,7 @@ def compute_first(productions, terminals, nonterminals):
         if not changed:
             break
 
-    # Remove nonterminals from FIRST sets (keep only terminals)
-    for lhs in nonterminals:
-        first[lhs] = [sym for sym in first[lhs] if sym not in nonterminals]
+    
 
     return first
 
@@ -95,16 +93,9 @@ def compute_follow(productions, first, nonterminals, start_symbol):
         if not changed:
             break
 
-    # Cleanup: remove any nonterminals from FOLLOW sets
-    for nt in nonterminals:
-        follow[nt] = [sym for sym in follow[nt] if sym not in nonterminals]
 
     return follow
-    # Cleanup: remove any nonterminals from FOLLOW sets
-    for nt in nonterminals:
-        follow[nt] = [sym for sym in follow[nt] if sym not in nonterminals]
-
-    return follow
+   
 
 # ------------------------ Main ------------------------
 def main():
