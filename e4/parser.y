@@ -236,22 +236,9 @@ void yyerror(const char *s) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <inputfile>\n", argv[0]);
-        return 1;
-    }
-
-    yyin = fopen(argv[1], "r");
-    if (!yyin) {
-        perror("File open failed");
-        return 1;
-    }
-
-    printf("Parsing file: %s\n", argv[1]);
-    printf("----------------------\n");
+    yyin = fopen(argv[1],"r");
 
     yyparse();
 
     fclose(yyin);
-    return 0;
 }
