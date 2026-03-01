@@ -43,60 +43,80 @@ def read_grammar_from_file(filename):
 # ------------------------ LL(1) Table Construction ------------------------
 def construct_ll1_table(productions, first, epsilon_first, terminals, nonterminals):
     """Construct LL(1) parsing table using FIRST and epsilon FIRST sets."""
-    table = {(nt, t): 'phi' for nt in nonterminals for t in terminals}
+    
+    table = {(nt, t): None for nt in nonterminals for t in terminals}
 
-    for lhs, productions_list in productions.items():
-        for production in productions_list:
-            symbols = production.split()
-            reversed_symbols = symbols[::-1]  # Stack push order
-            first_symbol = symbols[0]
+    for A, rules in productions.items():
+        for rule in rules:
+            symbols = rule.split()
 
-            if first_symbol in terminals:
-                table[(lhs, first_symbol)] = ' '.join(reversed_symbols)
-            elif first_symbol in nonterminals:
-                for terminal in first[first_symbol]:
-                    table[(lhs, terminal)] = ' '.join(reversed_symbols)
+            # epsilon production
+            if symbols[0] == 'e':
+                for t in follow[A]:
+                    table[(A, t)] = rule
+
+            # terminal start
+            elif symbols[0] in terminals:
+                table[(A, symbols[0])] = rule
+
+            # nonterminal start
             else:
-                # Epsilon production
-                for terminal in epsilon_first[lhs]:
-                    table[(lhs, terminal)] = 'e'
+                for t in first[symbols[0]]:
+                    if table[(A, t)] is None:   # 👈 IMPORTANT
+                        table[(A, t)] = rule
 
     return table
 
 # ------------------------ String Parsing ------------------------
-def parse_string(ll1_table, input_string, start_symbol='E'):
+def parse_string(ll1_table, terminals,start_symbol='E'):
     """Parse a string using the LL(1) table."""
-    tokens = input_string.split()
-    stack = [start_symbol]
+    print("String parsing")
+
+    string = "num + num"
+    tokens = string.split(" ") + ['$']
+
+    stack = ['$', 'E']
     i = 0
     n = len(tokens)
 
-    print("Parsing steps:")
-    while i < n:
-        current_token = tokens[i]
-        top_stack = stack.pop(-1)
+    while stack:
+        element = tokens[i]
+        top = stack.pop()
 
-        if top_stack == current_token:
-            # Terminal matches
+        print("Stack:", stack, " | Input:", element)
+
+        # Case 1: Terminal match
+        if top == element:
             i += 1
-        elif top_stack == 'e':
-            # Epsilon → skip
+
+        # Case 2: Epsilon → do nothing
+        elif top == 'e':
             continue
+
+        # Case 3: Terminal mismatch
+        elif top in terminals:
+            print("Rejected")
+            break
+
+        # Case 4: Non-terminal expansion
         else:
-            # Nonterminal → lookup LL(1) table
-            production_to_push = ll1_table.get((top_stack, current_token))
-            if not production_to_push:
-                print(f"Error: No rule for ({top_stack}, {current_token})")
-                return
-            for symbol in production_to_push.split():
-                stack.append(symbol)
+            production = ll1_table.get((top, element))
 
-        print(stack)
+            if not production:
+                print("Rejected")
+                break
 
-    if not stack:
-        print("\nInput accepted ✅")
+            # Do NOT push epsilon
+            if production != 'e':
+                rhs = production.split(" ")
+                for symbol in reversed(rhs):
+                    stack.append(symbol)
+
     else:
-        print("\nInput rejected ❌")
+        if not stack:
+            print("\nAccepted")
+        else:
+            print("\nRejected")
 
 # ------------------------ Main ------------------------
 def main():
@@ -117,7 +137,7 @@ def main():
 
     # Example string parsing
     print("\nString parsing for input: 'name'")
-    parse_string(ll1_table, "name")
+    parse_string(ll1_table, terminals)
 
 if __name__ == "__main__":
     main()
